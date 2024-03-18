@@ -1,10 +1,10 @@
 package com.bookstore;
 
-
 public class App 
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+      SQLiteConn.initDb();
+      System.out.println( "Hello World!" );
     }
 }
