@@ -64,7 +64,7 @@ public class Client {
     Scanner scanner = new Scanner(System.in);
     while (socket.isConnected()) {
       String message = scanner.nextLine();
-      if (message.equalsIgnoreCase("exit")) {
+      if (message.equalsIgnoreCase("quit")) {
         System.out.println("Bye!");
         break;
       }

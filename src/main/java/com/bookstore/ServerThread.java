@@ -7,14 +7,13 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 
 public class ServerThread implements Runnable {
 
   private Socket socket;
   private BufferedReader bufferedReader;
   private BufferedWriter bufferedWriter;
-  // private boolean isAuthorized = false;
+  private boolean isAuthorized = false;
   Connection connection = null;
 
   public ServerThread(Socket socket) {
@@ -31,9 +30,23 @@ public class ServerThread implements Runnable {
 
   @Override
   public void run() {
-    while (socket.isConnected()) {
+    while (socket.isConnected() && !isAuthorized) {
       try {
         bufferedWriter.write("Welcome to the Bookstore Server");
+        bufferedWriter.newLine();
+        bufferedWriter.write("1. Login (type login <username> <password>)");
+        bufferedWriter.newLine();
+        bufferedWriter.write("2. Register (type register <username> <name> <password>)");
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+        String request = bufferedReader.readLine();
+        handleAuthRequest(request);
+      } catch (Exception e) {
+        System.out.println("Error while sending welcome message");
+      }
+    }
+    while (socket.isConnected() && isAuthorized) {
+      try {
         bufferedWriter.newLine();
         bufferedWriter.flush();
         showMenu();
@@ -49,17 +62,13 @@ public class ServerThread implements Runnable {
 
   private void showMenu() {
     try {
-      bufferedWriter.write("1. Login (type login <username> <password>)");
+      bufferedWriter.write("1. Add book");
       bufferedWriter.newLine();
-      bufferedWriter.write("2. Register (type register <username> <name> <password>)");
+      bufferedWriter.write("2. List books");
       bufferedWriter.newLine();
-      bufferedWriter.write("3. Add book");
+      bufferedWriter.write("3. Buy book");
       bufferedWriter.newLine();
-      bufferedWriter.write("4. List books");
-      bufferedWriter.newLine();
-      bufferedWriter.write("5. Buy book");
-      bufferedWriter.newLine();
-      bufferedWriter.write("6. Quit");
+      bufferedWriter.write("4. Quit");
       bufferedWriter.newLine();
       bufferedWriter.flush();
     } catch (Exception e) {
@@ -67,16 +76,25 @@ public class ServerThread implements Runnable {
     }
   }
 
-  private void handleRequest(String request) {
+  private void handleAuthRequest(String request) {
     String[] requestParts = request.split(" ");
     String command = requestParts[0];
     switch (command) {
       case "login":
-        // handleLogin(requestParts);
+        handleLogin(requestParts);
         break;
       case "register":
         handleRegister(requestParts);
         break;
+      default:
+        break;
+    }
+  }
+
+  private void handleRequest(String request) {
+    String[] requestParts = request.split(" ");
+    String command = requestParts[0];
+    switch (command) {
       case "add":
         // handleAdd(requestParts);
         break;
@@ -94,22 +112,40 @@ public class ServerThread implements Runnable {
     }
   }
 
+  private void handleLogin(String[] requestParts) {
+    String username = requestParts[1];
+    String password = requestParts[2];
+    try {
+      AuthController authController = new AuthController(connection);
+      boolean result = authController.login(username, password);
+      if (result) {
+        bufferedWriter.write("User logged in successfully");
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+        isAuthorized = true;
+      }
+      else
+      {
+        bufferedWriter.write("Invalid username or password");
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+      }
+    } catch (Exception e) {
+      System.out.println("Error while logging in user");
+    }
+  }
+
   private void handleRegister(String[] requestParts) {
     String username = requestParts[1];
     String name = requestParts[2];
     String password = requestParts[3];
     try {
-      String sql = "INSERT INTO users (username, name, password) VALUES (?, ?, ?)";
-      PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-      preparedStatement.setString(1, username);
-      preparedStatement.setString(2, name);
-      preparedStatement.setString(3, password);
-      preparedStatement.executeUpdate();
-      bufferedWriter.write("User registered successfully");
+      AuthController authController = new AuthController(connection);
+      String result = authController.register(username, name, password);
+      bufferedWriter.write(result);
       bufferedWriter.newLine();
       bufferedWriter.flush();
     } catch (Exception e) {
-      e.printStackTrace();
       System.out.println("Error while registering user");
     }
   }
