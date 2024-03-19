@@ -62,35 +62,42 @@ public class Client {
 
   private void sendMessage() {
     Scanner scanner = new Scanner(System.in);
-    while (this.socket.isConnected()) {
+    while (socket.isConnected()) {
       String message = scanner.nextLine();
       if (message.equalsIgnoreCase("exit")) {
         System.out.println("Bye!");
-        closeResources();
         break;
       }
       try {
         bufferedWriter.write(message);
         bufferedWriter.newLine();
         bufferedWriter.flush();
-      } catch (Exception e) { 
+      } catch (Exception e) {
         System.out.println("Error sending message");
-        closeResources();
         break;
       }
     }
+    closeResources();
     scanner.close();
   }
 
   private void receiveMessage() {
-    new Thread(() -> {
-      while (this.socket.isConnected()) {
-        try {
-          String message = bufferedReader.readLine();
-          System.out.println("Message from server: " + message);
-        } catch (Exception e) {
-          closeResources();
-          break;
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (socket.isConnected()) {
+          try {
+            String message = bufferedReader.readLine();
+            if (message == null) {
+              System.out.println("Server disconnected");
+              closeResources();
+              break;
+            }
+            System.out.println(message);
+          } catch (Exception e) {
+            closeResources();
+            break;
+          }
         }
       }
     }).start();
@@ -122,6 +129,7 @@ public class Client {
       client.setId(1);
       client.receiveMessage();
       client.sendMessage();
+
     } catch (Exception e) {
       System.out.println("Client error: You have been disconnected");
     }

@@ -24,9 +24,9 @@ public class SQLiteConn {
           + ");";
       String sqlUsers = "CREATE TABLE IF NOT EXISTS users ("
           + " id integer PRIMARY KEY,"
-          + " username text NOT NULL,"
-          + " password text NOT NULL,"
-          + " name text NOT NULL"
+          + " username text NOT NULL UNIQUE,"
+          + " name text NOT NULL,"
+          + " password text NOT NULL"
           + ");";
       String sqlRequests = "CREATE TABLE IF NOT EXISTS requests ("
           + " id integer PRIMARY KEY,"
