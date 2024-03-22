@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.bookstore.model.Book;
 
@@ -16,42 +17,42 @@ public class BooksController {
     this.connection = connection;
   }
 
-  public List<Book> listBooks() {
-    try {
-      String sql = "SELECT * FROM books";
-      PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-      ResultSet res = preparedStatement.executeQuery();
-      List<Book> books = new ArrayList<>();
-      while (res.next()) {
-        Book book = new Book();
-        book.setTitle(res.getString("title"));
-        book.setAuthor(res.getString("author"));
-        book.setGenre(res.getString("genre"));
-        book.setId(res.getInt("id"));
-        book.setOwnerId(res.getInt("user_id"));
-        book.setStatus(res.getString("status"));
-        books.add(book);
-      }
-      return books;
-    } catch (Exception e) {
-      return null;
-    }
-  }
+  // public List<Book> listBooks() {
+  // try {
+  // String sql = "SELECT * FROM books";
+  // PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+  // ResultSet res = preparedStatement.executeQuery();
+  // List<Book> books = new ArrayList<>();
+  // while (res.next()) {
+  // Book book = new Book();
+  // book.setTitle(res.getString("title"));
+  // book.setAuthor(res.getString("author"));
+  // book.setGenre(res.getString("genre"));
+  // book.setId(res.getInt("id"));
+  // book.setOwnerId(res.getInt("user_id"));
+  // book.setStatus(res.getString("status"));
+  // books.add(book);
+  // }
+  // return books;
+  // } catch (Exception e) {
+  // return null;
+  // }
+  // }
 
-  public List<Book> listBooks(String[] requestParts) {
+  public List<Book> listBooks(Map<String, String> request) {
     try {
-      String title = requestParts[1];
-      String author = requestParts[2];
-      String genre = requestParts[3];
-      String sql = "SELECT title, author, genre" +
+      String title = request.get("title");
+      String author = request.get("author");
+      String genre = request.get("genre");
+      String sql = "SELECT *" +
           " FROM books" +
-          " WHERE (title LIKE CONCAT('%', ?, '%') OR ? IS NULL)" +
-          " AND (author LIKE CONCAT('%', ?, '%') OR ? IS NULL)" +
-          " AND (genre = ? OR ? IS NULL)" + 
+          " WHERE (title LIKE ? OR ? IS NULL)" +
+          " AND (author LIKE ? OR ? IS NULL)" +
+          " AND (genre = ? OR ? IS NULL)" +
           " AND status = 'available';";
       PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-      preparedStatement.setString(1, title);
-      preparedStatement.setString(2, author);
+      preparedStatement.setString(1, "%" + title + "%");
+      preparedStatement.setString(2, "%" + author + "%");
       preparedStatement.setString(3, genre);
       ResultSet res = preparedStatement.executeQuery();
       List<Book> books = new ArrayList<>();
@@ -68,6 +69,7 @@ public class BooksController {
       }
       return books;
     } catch (Exception e) {
+      e.printStackTrace();
       return null;
     }
   }

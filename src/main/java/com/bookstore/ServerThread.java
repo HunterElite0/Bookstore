@@ -8,7 +8,9 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.bookstore.controller.AuthController;
 import com.bookstore.controller.BooksController;
@@ -125,11 +127,15 @@ public class ServerThread implements Runnable {
     try {
       bufferedWriter.write("1. Add book (type add)");
       bufferedWriter.newLine();
-      bufferedWriter.write("2. Search for a book (type search)");
+      bufferedWriter.write("2. Remove book (type remove <book_id>)");
       bufferedWriter.newLine();
-      bufferedWriter.write("3. Buy book");
+      bufferedWriter.write("3. Search for a book (type search)");
       bufferedWriter.newLine();
-      bufferedWriter.write("4. Quit");
+      bufferedWriter.write("4. Submit request for book (type request <book_id>)");
+      bufferedWriter.newLine();
+      bufferedWriter.write("5. View requests (type requests)");
+      bufferedWriter.newLine();
+      bufferedWriter.write("6. Quit");
       bufferedWriter.newLine();
       bufferedWriter.flush();
     } catch (Exception e) {
@@ -187,16 +193,24 @@ public class ServerThread implements Runnable {
   private void handleList() {
     try {
       BooksController booksController = new BooksController(connection);
-      String[] requestParts = new String[4];
-      bufferedWriter.write("Please mention the title, author and genre of the book you are looking for (leave fields empty to list all books): ");
+      bufferedWriter.write(
+          "Type <title> <author> <genre> of the book you are looking for (leave fields empty to list all books): ");
       bufferedWriter.newLine();
       bufferedWriter.flush();
-      
-      requestParts[1] = null;
-      requestParts[2] = null;
-      requestParts[3] = null;
+      String[] keys = { "title", "author", "genre" };
+      String[] request = bufferedReader.readLine().split(" ");
+      Map<String, String> requestParts = new HashMap<String, String>();
+      for (int i = 0; i < keys.length; i++) {
+        requestParts.put(keys[i], request.length > i && !request[i].isEmpty() ? request[i] : null);
+      }
       List<Book> result = booksController.listBooks(requestParts);
-      for(Book book: result){
+      if (result.isEmpty()) {
+        bufferedWriter.write("No books found");
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+        return;
+      }
+      for (Book book : result) {
         bufferedWriter.write(book.getId() + ". ");
         bufferedWriter.write(book.toString());
         bufferedWriter.newLine();
