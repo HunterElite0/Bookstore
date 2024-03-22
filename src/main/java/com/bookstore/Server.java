@@ -15,7 +15,7 @@ public class Server {
       System.out.println("Server started");
       while (true) {
         Socket socket = serverSocket.accept();
-        System.out.println("Client connected");
+        // System.out.println("Client connected");
         ServerThread serverThread = new ServerThread(socket);
         Thread thread = new Thread(serverThread);
         thread.start();

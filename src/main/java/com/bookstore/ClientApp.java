@@ -7,49 +7,13 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class Client {
+public class ClientApp {
 
   protected Socket socket;
-  private String name;
-  private String username;
-  private String password;
-  private Integer id;
-  BufferedReader bufferedReader;
-  BufferedWriter bufferedWriter;
+  protected BufferedReader bufferedReader;
+  protected BufferedWriter bufferedWriter;
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public Integer getId() {
-    return id;
-  }
-
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  public Client(Socket socket) {
+  public ClientApp(Socket socket) {
     this.socket = socket;
     try {
       this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -62,10 +26,11 @@ public class Client {
 
   private void sendMessage() {
     Scanner scanner = new Scanner(System.in);
-    while (socket.isConnected()) {
+    while (socket.isConnected() && !socket.isClosed()) {
       String message = scanner.nextLine();
       if (message.equalsIgnoreCase("quit")) {
         System.out.println("Bye!");
+        closeResources();
         break;
       }
       try {
@@ -73,11 +38,11 @@ public class Client {
         bufferedWriter.newLine();
         bufferedWriter.flush();
       } catch (Exception e) {
-        System.out.println("Error sending message");
+        closeResources();
+        System.out.println("Error sending request");
         break;
       }
     }
-    closeResources();
     scanner.close();
   }
 
@@ -85,7 +50,7 @@ public class Client {
     new Thread(new Runnable() {
       @Override
       public void run() {
-        while (socket.isConnected()) {
+        while (socket.isConnected() && !socket.isClosed()) {
           try {
             String message = bufferedReader.readLine();
             if (message == null) {
@@ -122,14 +87,9 @@ public class Client {
   public static void main(String[] args) {
     try {
       Socket socket = new Socket("localhost", 8080);
-      Client client = new Client(socket);
-      client.setName("John Doe");
-      client.setUsername("johndoe");
-      client.setPassword("password");
-      client.setId(1);
+      ClientApp client = new ClientApp(socket);
       client.receiveMessage();
       client.sendMessage();
-
     } catch (Exception e) {
       System.out.println("Client error: You have been disconnected");
     }
