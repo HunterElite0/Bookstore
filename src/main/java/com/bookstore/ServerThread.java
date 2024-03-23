@@ -67,6 +67,7 @@ public class ServerThread implements Runnable {
         String request = bufferedReader.readLine();
         handleRequest(request);
       } catch (Exception e) {
+        System.out.println("Error processing request");
         stop();
         break;
       }
@@ -127,15 +128,17 @@ public class ServerThread implements Runnable {
     try {
       bufferedWriter.write("1. Add book (type add)");
       bufferedWriter.newLine();
-      bufferedWriter.write("2. Remove book (type remove <book_id>)");
+      bufferedWriter.write("2. Remove book (type remove)");
       bufferedWriter.newLine();
       bufferedWriter.write("3. Search for a book (type search)");
       bufferedWriter.newLine();
-      bufferedWriter.write("4. Submit request for book (type request <book_id>)");
+      bufferedWriter.write("4. Submit request for book (type submit)");
       bufferedWriter.newLine();
       bufferedWriter.write("5. View requests (type requests)");
       bufferedWriter.newLine();
-      bufferedWriter.write("6. Quit");
+      bufferedWriter.write("6. View chats (type chats)");
+      bufferedWriter.newLine();
+      bufferedWriter.write("7. Quit");
       bufferedWriter.newLine();
       bufferedWriter.flush();
     } catch (Exception e) {
@@ -143,7 +146,7 @@ public class ServerThread implements Runnable {
     }
   }
 
-  private void handleRequest(String request) {
+  private void handleRequest(String request) throws IOException {
     switch (request) {
       case "add":
         handleAdd();
@@ -151,8 +154,17 @@ public class ServerThread implements Runnable {
       case "search":
         handleList();
         break;
-      case "buy":
+      case "remove":
+        handleRemove();
+        break;
+      case "request":
         // handleBuy(requestParts);
+        break;
+      case "requests":
+        // handleViewRequests();
+        break;
+      case "chats":
+        // handleViewChats();
         break;
       case "quit":
         stop();
@@ -175,7 +187,7 @@ public class ServerThread implements Runnable {
       bufferedWriter.write("Book genre: ");
       bufferedWriter.newLine();
       bufferedWriter.flush();
-      String genre = bufferedReader.readLine();
+      String genre = bufferedReader.readLine().toUpperCase();
       bufferedWriter.write("Book price: ");
       bufferedWriter.newLine();
       bufferedWriter.flush();
@@ -193,12 +205,20 @@ public class ServerThread implements Runnable {
   private void handleList() {
     try {
       BooksController booksController = new BooksController(connection);
-      bufferedWriter.write(
-          "Type <title> <author> <genre> of the book you are looking for (leave fields empty to list all books): ");
+      String[] keys = { "title", "author", "genre" };
+      String[] request = new String[keys.length];
+      bufferedWriter.write("Book title (optional): ");
       bufferedWriter.newLine();
       bufferedWriter.flush();
-      String[] keys = { "title", "author", "genre" };
-      String[] request = bufferedReader.readLine().split(" ");
+      request[0] = bufferedReader.readLine();
+      bufferedWriter.write("Book author (optional): ");
+      bufferedWriter.newLine();
+      bufferedWriter.flush();
+      request[1] = bufferedReader.readLine();
+      bufferedWriter.write("Book genre (optional): ");
+      bufferedWriter.newLine();
+      bufferedWriter.flush();
+      request[2] = bufferedReader.readLine().toUpperCase();
       Map<String, String> requestParts = new HashMap<String, String>();
       for (int i = 0; i < keys.length; i++) {
         requestParts.put(keys[i], request.length > i && !request[i].isEmpty() ? request[i] : null);
@@ -217,6 +237,24 @@ public class ServerThread implements Runnable {
       }
     } catch (Exception e) {
       System.out.println("Error while listing books");
+    }
+  }
+
+  public void handleRemove() throws IOException {
+    try {
+      bufferedWriter.write("Type the id of the book you want to remove: ");
+      bufferedWriter.newLine();
+      bufferedWriter.flush();
+      Integer id = Integer.parseInt(bufferedReader.readLine());
+      BooksController booksController = new BooksController(connection);
+      String result = booksController.removeBook(id, userAccount.getId());
+      bufferedWriter.write(result);
+      bufferedWriter.newLine();
+      bufferedWriter.flush();
+    } catch (Exception e) {
+      bufferedWriter.write(e.getMessage());
+      bufferedWriter.newLine();
+      bufferedWriter.flush();
     }
   }
 

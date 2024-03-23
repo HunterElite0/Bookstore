@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 
 public class SQLiteConn {
-  public static void initDb(){
+  public static void initDb() {
     Connection connection = null;
     try {
       String url = "jdbc:sqlite:./db/bookstore.db";
@@ -31,15 +31,24 @@ public class SQLiteConn {
       String sqlRequests = "CREATE TABLE IF NOT EXISTS requests ("
           + " id integer PRIMARY KEY,"
           + " book_id integer NOT NULL,"
+          + " owner_id integer NOT NULL,"
           + " user_id integer NOT NULL,"
           + " status text NOT NULL,"
           + " FOREIGN KEY (book_id) REFERENCES books(id),"
-          + " FOREIGN KEY (user_id) REFERENCES users(id)"
+          + " FOREIGN KEY (user_id) REFERENCES users(id),"
+          + " FOREIGN KEY (owner_id) REFERENCES users(id)"
+          + ");";
+      String sqlMessage = "CREATE TABLE IF NOT EXISTS messages ("
+          + " id integer PRIMARY KEY,"
+          + " request_id integer NOT NULL,"
+          + " message text NOT NULL,"
+          + " FOREIGN KEY (request_id) REFERENCES requests(id)"
           + ");";
       Statement statement = connection.createStatement();
       statement.execute(sqlUsers);
       statement.execute(sqlBooks);
       statement.execute(sqlRequests);
+      statement.execute(sqlMessage);
       System.out.println("Table created successfully.");
 
     } catch (Exception e) {

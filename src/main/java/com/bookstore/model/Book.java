@@ -66,6 +66,6 @@ public class Book {
   }
 
   public String toString() {
-    return "Title: " + title + ", Author: " + author + ", Genre: " + genre + ", Price: " + price + ", Status: " + status;
+    return "[ID : " + id + "] Title: " + title + ", Author: " + author + ", Genre: " + genre + ", Price: " + price + ", Status: " + status;
   }
 }

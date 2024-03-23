@@ -41,19 +41,16 @@ public class BooksController {
 
   public List<Book> listBooks(Map<String, String> request) {
     try {
-      String title = request.get("title");
-      String author = request.get("author");
-      String genre = request.get("genre");
-      String sql = "SELECT *" +
-          " FROM books" +
-          " WHERE (title LIKE ? OR ? IS NULL)" +
-          " AND (author LIKE ? OR ? IS NULL)" +
-          " AND (genre = ? OR ? IS NULL)" +
-          " AND status = 'available';";
+      String sql = "SELECT * FROM books";
+      for (String key : request.keySet()) {
+        if (request.get(key) != null) {
+          sql += " WHERE " + key + " LIKE " + "'%" + request.get(key) + "%'";
+          break;
+        }
+      }
+      sql += ";";
+      System.out.println(sql);
       PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-      preparedStatement.setString(1, "%" + title + "%");
-      preparedStatement.setString(2, "%" + author + "%");
-      preparedStatement.setString(3, genre);
       ResultSet res = preparedStatement.executeQuery();
       List<Book> books = new ArrayList<>();
       while (res.next()) {
@@ -88,6 +85,19 @@ public class BooksController {
       return "Book added successfully";
     } catch (Exception e) {
       return "Error while adding book";
+    }
+  }
+
+  public String removeBook(Integer bookId, Integer userId) {
+    try {
+      String sql = "DELETE FROM books WHERE id = ? AND user_id = ? AND status = 'available'";
+      PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+      preparedStatement.setInt(1, bookId);
+      preparedStatement.setInt(2, userId);
+      preparedStatement.executeUpdate();
+      return "Book deleted successfully";
+    } catch (Exception e) {
+      return "Error while deleting book";
     }
   }
 }
