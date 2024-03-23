@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,34 +18,17 @@ public class BooksController {
     this.connection = connection;
   }
 
-  // public List<Book> listBooks() {
-  // try {
-  // String sql = "SELECT * FROM books";
-  // PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
-  // ResultSet res = preparedStatement.executeQuery();
-  // List<Book> books = new ArrayList<>();
-  // while (res.next()) {
-  // Book book = new Book();
-  // book.setTitle(res.getString("title"));
-  // book.setAuthor(res.getString("author"));
-  // book.setGenre(res.getString("genre"));
-  // book.setId(res.getInt("id"));
-  // book.setOwnerId(res.getInt("user_id"));
-  // book.setStatus(res.getString("status"));
-  // books.add(book);
-  // }
-  // return books;
-  // } catch (Exception e) {
-  // return null;
-  // }
-  // }
-
-  public List<Book> listBooks(Map<String, String> request) {
+  public List<Book> listBooks(List<String> request) {
     try {
+      String[] keys = { "title", "author", "genre" };
+      Map<String, String> requestParts = new HashMap<String, String>();
+      for (int i = 0; i < keys.length; i++) {
+        requestParts.put(keys[i], request.size() > i && !request.get(i).isEmpty() ? request.get(i) : null);
+      }
       String sql = "SELECT * FROM books";
-      for (String key : request.keySet()) {
-        if (request.get(key) != null) {
-          sql += " WHERE " + key + " LIKE " + "'%" + request.get(key) + "%'";
+      for (String key : requestParts.keySet()) {
+        if (requestParts.get(key) != null) {
+          sql += " WHERE " + key + " LIKE " + "'%" + requestParts.get(key) + "%'";
           break;
         }
       }
@@ -66,7 +50,6 @@ public class BooksController {
       }
       return books;
     } catch (Exception e) {
-      e.printStackTrace();
       return null;
     }
   }
@@ -100,4 +83,8 @@ public class BooksController {
       return "Error while deleting book";
     }
   }
+
+  // public String borrowBook(Integer bookId, Integer userId) {
+    
+  // }
 }

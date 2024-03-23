@@ -9,6 +9,9 @@ public class Book {
   private String status;
   private Double price;
 
+  public Book() {
+  }
+
   public String getTitle() {
     return title;
   }
