@@ -2,10 +2,15 @@ package com.bookstore;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Server {
   private ServerSocket serverSocket;
-
+  public static Map<Integer, List<ServerThread>> rooms = new HashMap<>(); // Stores the request id and the list of clients threads
+  public static Map<Integer, Set<Integer>> requests = new HashMap<>(); // Stores the request id and the list of users
   public Server(ServerSocket serverSocket) {
     this.serverSocket = serverSocket;
   }
@@ -25,8 +30,8 @@ public class Server {
     }
   }
 
-  public void stop(){
-    if(serverSocket != null){
+  public void stop() {
+    if (serverSocket != null) {
       try {
         serverSocket.close();
       } catch (Exception e) {

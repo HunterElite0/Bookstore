@@ -5,8 +5,21 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 
 public class SQLiteConn {
+  private static Connection connection = null;
+
+  public static Connection getConnection() {
+    if (connection == null) {
+      try {
+        String url = "jdbc:sqlite:./db/bookstore.db";
+        connection = DriverManager.getConnection(url);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    return connection;
+  }
+
   public static void initDb() {
-    Connection connection = null;
     try {
       String url = "jdbc:sqlite:./db/bookstore.db";
       connection = DriverManager.getConnection(url);

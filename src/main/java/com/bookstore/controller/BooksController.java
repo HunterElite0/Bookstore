@@ -18,6 +18,28 @@ public class BooksController {
     this.connection = connection;
   }
 
+  public Book getBookInfo(Integer bookId) {
+    try {
+      String sql = "SELECT * FROM books WHERE id = ?;";
+      PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+      preparedStatement.setInt(1, bookId);
+      ResultSet res = preparedStatement.executeQuery();
+      Book book = new Book();
+      while (res.next()) {
+        book.setTitle(res.getString("title"));
+        book.setAuthor(res.getString("author"));
+        book.setGenre(res.getString("genre"));
+        book.setId(res.getInt("id"));
+        book.setOwnerId(res.getInt("user_id"));
+        book.setStatus(res.getString("status"));
+        book.setPrice(res.getDouble("price"));
+      }
+      return book;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   public List<Book> listBooks(List<String> request) {
     try {
       String[] keys = { "title", "author", "genre" };
@@ -33,7 +55,7 @@ public class BooksController {
         }
       }
       sql += ";";
-      System.out.println(sql);
+      // System.out.println(sql);
       PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
       ResultSet res = preparedStatement.executeQuery();
       List<Book> books = new ArrayList<>();
@@ -84,7 +106,16 @@ public class BooksController {
     }
   }
 
-  // public String borrowBook(Integer bookId, Integer userId) {
-    
-  // }
+  public String updateStatus(Integer bookId, String status) {
+    try {
+      String sql = "UPDATE books SET status = ? WHERE id = ?";
+      PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+      preparedStatement.setString(1, status);
+      preparedStatement.setInt(2, bookId);
+      preparedStatement.executeUpdate();
+      return "Status updated successfully";
+    } catch (Exception e) {
+      return "Error while updating status";
+    }
+  }
 }

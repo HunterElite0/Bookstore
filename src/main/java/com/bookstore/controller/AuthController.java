@@ -48,6 +48,7 @@ public class AuthController {
       preparedStatement.executeUpdate();
       return "User registered successfully";
     } catch (Exception e) {
+      // e.printStackTrace();
       return "Error while registering user (Try another username)";
     }
   }

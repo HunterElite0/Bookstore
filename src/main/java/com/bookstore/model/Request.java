@@ -51,7 +51,7 @@ public class Request {
   }
 
   public String toString() {
-    return "Request [ID : " + id + "] Owner:" + ownerId + " Requester: " + userId + " Status: " + status + " Book: " + bookId;
+    return "Request [ID : " + id + "] Owner: " + ownerId + " Requester: " + userId + " Status: " + status + " Book: " + bookId;
   }
 
 }
