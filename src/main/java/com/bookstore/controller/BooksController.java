@@ -47,13 +47,14 @@ public class BooksController {
       for (int i = 0; i < keys.length; i++) {
         requestParts.put(keys[i], request.size() > i && !request.get(i).isEmpty() ? request.get(i) : null);
       }
-      String sql = "SELECT * FROM books";
+      String sql = "SELECT * FROM books WHERE ";
       for (String key : requestParts.keySet()) {
         if (requestParts.get(key) != null) {
-          sql += " WHERE " + key + " LIKE " + "'%" + requestParts.get(key) + "%'";
-          break;
+          sql += key + " LIKE " + "'%" + requestParts.get(key) + "%'";
+          sql += " AND ";
         }
       }
+      sql = sql.substring(0, sql.length() - 5);
       sql += ";";
       // System.out.println(sql);
       PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
@@ -116,6 +117,22 @@ public class BooksController {
       return "Status updated successfully";
     } catch (Exception e) {
       return "Error while updating status";
+    }
+  }
+
+  public Map<String, Integer> getBooksStats() {
+    try {
+      String sql = "SELECT COUNT(*) AS total_books, SUM(CASE WHEN status = 'available' THEN 1 ELSE 0 END) AS available_books, SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_books, SUM(CASE WHEN status = 'borrowed' THEN 1 ELSE 0 END) AS borrowed_books FROM books;";
+      PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+      ResultSet res = preparedStatement.executeQuery();
+      Map<String, Integer> stats = new HashMap<>();
+      stats.put("Total books", res.getInt("total_books"));
+      stats.put("Available books", res.getInt("available_books"));
+      stats.put("Pending books", res.getInt("pending_books"));
+      stats.put("Borrowed books", res.getInt("borrowed_books"));
+      return stats;
+    } catch (Exception e) {
+      return null;
     }
   }
 }

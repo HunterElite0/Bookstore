@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import com.bookstore.connection.SQLiteConn;
 import com.bookstore.controller.AuthController;
@@ -31,7 +32,6 @@ public class ServerThread implements Runnable {
   private BooksController booksController;
   private RequestController requestController;
   private ChatController chatController;
-  private List<String[]> chats;
 
   public ServerThread(Socket socket) {
     this.socket = socket;
@@ -68,17 +68,19 @@ public class ServerThread implements Runnable {
         break;
       }
     }
+    if (socket.isConnected() && isAuthorized && !socket.isClosed()) {
+      List<String[]> chats = chatController.retrieveChats(userAccount.getId());
+      for (String[] chat : chats) {
+        Server.rooms.put(Integer.parseInt(chat[0]), new ArrayList<>());
+        Server.requests.put(Integer.parseInt(chat[0]), new HashSet<>());
+        Server.requests.get(Integer.parseInt(chat[0])).add(Integer.parseInt(chat[1]));
+        Server.requests.get(Integer.parseInt(chat[0])).add(Integer.parseInt(chat[2]));
+      }
+    }
     while (socket.isConnected() && isAuthorized && !socket.isClosed()) {
       try {
         // bufferedWriter.newLine();
         // bufferedWriter.flush();
-        chats = chatController.retrieveChats(userAccount.getId());
-        for (String[] chat : chats) {
-          Server.rooms.put(Integer.parseInt(chat[0]), new ArrayList<>());
-          Server.requests.put(Integer.parseInt(chat[0]), new HashSet<>());
-          Server.requests.get(Integer.parseInt(chat[0])).add(Integer.parseInt(chat[1]));
-          Server.requests.get(Integer.parseInt(chat[0])).add(Integer.parseInt(chat[2]));
-        }
         showMenu();
         String request = bufferedReader.readLine();
         handleRequest(request);
@@ -162,6 +164,10 @@ public class ServerThread implements Runnable {
       bufferedWriter.newLine();
       bufferedWriter.write("10. Quit (type quit)");
       bufferedWriter.newLine();
+      if (userAccount.getUsername().equals("admin")) {
+        bufferedWriter.write("Admin Statistics (type stats)");
+        bufferedWriter.newLine();
+      }
       bufferedWriter.flush();
     } catch (Exception e) {
       System.out.println("Error while showing menu");
@@ -197,10 +203,22 @@ public class ServerThread implements Runnable {
       case "chat":
         handleOpenChat();
         break;
+      case "stats":
+        if (userAccount.getUsername().equals("admin")) {
+          handleStats();
+        } else {
+          bufferedWriter.write("You are not authorized to view statistics");
+          bufferedWriter.newLine();
+          bufferedWriter.flush();
+        }
+        break;
       case "quit":
         stop();
         break;
       default:
+        bufferedWriter.write("Invalid request");
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
         break;
     }
   }
@@ -289,6 +307,7 @@ public class ServerThread implements Runnable {
       Integer id = Integer.parseInt(bufferedReader.readLine());
       Book book = booksController.getBookInfo(id);
       String result = requestController.borrowBook(book, userAccount.getId());
+      booksController.updateStatus(id, "pending");
       bufferedWriter.write(result);
       bufferedWriter.newLine();
       bufferedWriter.flush();
@@ -352,6 +371,8 @@ public class ServerThread implements Runnable {
       bufferedWriter.flush();
       if (result.equals("Request accepted")) {
         booksController.updateStatus(id, "borrowed");
+      } else {
+        booksController.updateStatus(id, "available");
       }
     } catch (Exception e) {
       bufferedWriter.write(e.getMessage());
@@ -410,16 +431,41 @@ public class ServerThread implements Runnable {
           Server.rooms.get(id).remove(this);
           break;
         }
-        chatController.persistMessage(id, message);
+        chatController.persistMessage(id, message, userAccount.getUsername());
         for (ServerThread client : Server.rooms.get(id)) {
+          if (client == this) {
+            continue;
+          }
           client.bufferedWriter.write(userAccount.getName() + ": " + message);
           client.bufferedWriter.newLine();
           client.bufferedWriter.flush();
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      // e.printStackTrace();
       System.out.println("Error while opening chat");
+    }
+  }
+
+  private void handleStats() {
+    try {
+      Map<String, Integer> booksResult = booksController.getBooksStats();
+      Map<String, Integer> requestsResult = requestController.getRequestsStats();
+      bufferedWriter.write("Books statistics:");
+      bufferedWriter.newLine();
+      for (Map.Entry<String, Integer> entry : booksResult.entrySet()) {
+        bufferedWriter.write(entry.getKey() + ": " + entry.getValue());
+        bufferedWriter.newLine();
+      }
+      bufferedWriter.write("Requests statistics:");
+      bufferedWriter.newLine();
+      for (Map.Entry<String, Integer> entry : requestsResult.entrySet()) {
+        bufferedWriter.write(entry.getKey() + ": " + entry.getValue());
+        bufferedWriter.newLine();
+      }
+      bufferedWriter.flush();
+    } catch (Exception e) {
+      System.out.println("Error while listing statistics");
     }
   }
 

@@ -55,14 +55,15 @@ public class ChatController {
 
   public List<String> openChat(Integer requestId, Integer userId) {
     try {
-      String query = "SELECT m.message FROM messages m INNER JOIN requests r ON m.request_id = r.id WHERE r.id = ? AND r.user_id = ?";
+      String query = "SELECT m.message, m.sender_username FROM messages m INNER JOIN requests r ON m.request_id = r.id WHERE r.id = ? AND (r.user_id = ? OR r.owner_id = ?)";
       PreparedStatement preparedStatement = connection.prepareStatement(query);
       preparedStatement.setInt(1, requestId);
       preparedStatement.setInt(2, userId);
+      preparedStatement.setInt(3, userId);
       ResultSet resultSet = preparedStatement.executeQuery();
       List<String> messages = new ArrayList<>();
       while (resultSet.next()) {
-        messages.add(resultSet.getString("message"));
+        messages.add(resultSet.getString("sender_username") + ": " + resultSet.getString("message"));
       }
       return messages;
     } catch (Exception e) {
@@ -70,12 +71,13 @@ public class ChatController {
     }
   }
 
-  public boolean persistMessage(Integer requestId, String message) {
+  public boolean persistMessage(Integer requestId, String message, String senderUsername) {
     try {
-      String query = "INSERT INTO messages (request_id, message) VALUES (?, ?)";
+      String query = "INSERT INTO messages (request_id, message, sender_username) VALUES (?, ?, ?)";
       PreparedStatement preparedStatement = connection.prepareStatement(query);
       preparedStatement.setInt(1, requestId);
       preparedStatement.setString(2, message);
+      preparedStatement.setString(3, senderUsername);
       preparedStatement.executeUpdate();
       return true;
     } catch (Exception e) {

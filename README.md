@@ -63,5 +63,6 @@ Getting Started:
 Ensure you have Java SE Development Kit (JDK) installed.
 Download the application source code. (Assuming it's available elsewhere)
 Configure the database connection details in the server code (point to your SQLite database).
+Run the app.java file to initialize the database.
 Compile and run the server application.
 Compile and run the client application on separate machines or terminals.

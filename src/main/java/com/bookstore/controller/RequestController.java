@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.bookstore.model.Book;
 import com.bookstore.model.Request;
@@ -99,4 +101,19 @@ public class RequestController {
     }
   }
 
+  public Map<String, Integer> getRequestsStats() {
+    try {
+      String sql = "SELECT COUNT(*) AS total_requests, SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) AS accepted_requests, SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_requests, SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) AS rejected_requests FROM requests;";
+      PreparedStatement preparedStatement = this.connection.prepareStatement(sql);
+      ResultSet res = preparedStatement.executeQuery();
+      Map<String, Integer> stats = new HashMap<>();
+      stats.put("Total requests", res.getInt("total_requests"));
+      stats.put("Accepted requests",res.getInt("accepted_requests"));
+      stats.put("Pending requests", res.getInt("pending_requests"));
+      stats.put("Rejected requests", res.getInt("rejected_requests"));
+      return stats;
+    } catch (Exception e) {
+      return null;
+    }
+  }
 }

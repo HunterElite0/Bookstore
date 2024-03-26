@@ -55,6 +55,7 @@ public class SQLiteConn {
           + " id integer PRIMARY KEY,"
           + " request_id integer NOT NULL,"
           + " message text NOT NULL,"
+          + " sender_username text NOT NULL,"
           + " FOREIGN KEY (request_id) REFERENCES requests(id)"
           + ");";
       Statement statement = connection.createStatement();
