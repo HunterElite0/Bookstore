@@ -66,3 +66,6 @@ Configure the database connection details in the server code (point to your SQLi
 Run the app.java file to initialize the database.
 Compile and run the server application.
 Compile and run the client application on separate machines or terminals.
+
+NOTE:
+Admin account credentials: admin admin
