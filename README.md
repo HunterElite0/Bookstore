@@ -1,10 +1,10 @@
 SQLite Version: This application recommends using SQLite version 3.45.2 or later.
 
-Project Overview:
+# Project Overview:
 
 This project aims to create a functional online bookstore application using a client-server architecture and socket programming with multithreading. Users can browse, search, borrow, and lend books through an interactive interface.
 
-Technical Specifications:
+# Technical Specifications:
 
 Client-Server Architecture: The application utilizes a client-server architecture for communication and data management. The server manages book inventory and user requests, while clients interact with the bookstore and each other.
 Socket Programming: Java SE sockets are used to establish communication between the server and clients, facilitating request and response exchange.
@@ -60,12 +60,14 @@ Error Handling:
 The application implements error handling mechanisms to address various scenarios, including invalid user inputs.
 Getting Started:
 
+# How to initialize and run the applicaion
+
 Ensure you have Java SE Development Kit (JDK) installed.
-Download the application source code. (Assuming it's available elsewhere)
+Download the application source code.
 Configure the database connection details in the server code (point to your SQLite database).
 Run the app.java file to initialize the database.
 Compile and run the server application.
 Compile and run the client application on separate machines or terminals.
 
-NOTE:
+* NOTE:
 Admin account credentials: admin admin
