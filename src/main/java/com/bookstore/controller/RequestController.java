@@ -18,6 +18,28 @@ public class RequestController {
     this.connection = connection;
   }
 
+  public Request getRequestInfo(Integer id)
+  {
+    try {
+      String sql = "SELECT * FROM requests WHERE id = ?;";
+      PreparedStatement statement = connection.prepareStatement(sql);
+      statement.setInt(1, id);
+      ResultSet result = statement.executeQuery();
+      if (result.next()) {
+        Request request = new Request();
+        request.setId(result.getInt("id"));
+        request.setOwnerId(result.getInt("owner_id"));
+        request.setBookId(result.getInt("book_id"));
+        request.setUserId(result.getInt("user_id"));
+        request.setStatus(result.getString("status"));
+        return request;
+      }
+      return null;
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   public List<Request> listBorrowingRequests(Integer userId) {
     try {
       String sql = "SELECT * FROM requests WHERE user_id = ?;";

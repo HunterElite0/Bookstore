@@ -371,6 +371,11 @@ public class ServerThread implements Runnable {
       bufferedWriter.flush();
       if (result.equals("Request accepted")) {
         booksController.updateStatus(id, "borrowed");
+        Server.rooms.put(id, new ArrayList<>());
+        Server.requests.put(id, new HashSet<>());
+        Request request = requestController.getRequestInfo(id);
+        Server.requests.get(id).add(request.getUserId());
+        Server.requests.get(id).add(request.getOwnerId());
       } else {
         booksController.updateStatus(id, "available");
       }
