@@ -63,7 +63,7 @@ public class SQLiteConn {
       statement.execute(sqlBooks);
       statement.execute(sqlRequests);
       statement.execute(sqlMessage);
-      System.out.println("Table created successfully.");
+      System.out.println("Tables created successfully.");
 
     } catch (Exception e) {
       e.printStackTrace();

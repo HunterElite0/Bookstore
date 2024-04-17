@@ -306,6 +306,13 @@ public class ServerThread implements Runnable {
       bufferedWriter.flush();
       Integer id = Integer.parseInt(bufferedReader.readLine());
       Book book = booksController.getBookInfo(id);
+      if(book.getStatus().equals("borrowed"))
+      {
+        bufferedWriter.write("Book already taken.");
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+        return;
+      }
       String result = requestController.borrowBook(book, userAccount.getId());
       booksController.updateStatus(id, "pending");
       bufferedWriter.write(result);
